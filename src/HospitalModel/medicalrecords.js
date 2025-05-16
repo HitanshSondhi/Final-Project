@@ -24,4 +24,4 @@ const medicalRecordsSchema=mongoose.Schema({
 },{timestamp:true})
 
 
-const medicalRecords=mongoose.model("medicalRecords",medicalRecordsSchema);
+const medicalRecords=mongoose.model("MedicalRecords",medicalRecordsSchema);
