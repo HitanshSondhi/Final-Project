@@ -26,3 +26,5 @@ const billingSchmema=mongoose.model({
 
 },{timestamps:true})
 
+export const billing=mongoose.model("Billing",billingSchmema);
+
