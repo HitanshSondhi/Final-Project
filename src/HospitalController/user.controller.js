@@ -37,6 +37,44 @@ const registerUser = asynchandler(async (req, res) => {
     .json(new ApiResponse(201, "User registered successfully", createdUser));
 });
 
+const updateUser=asynchandler(async(req,res)=>{
+ const {id}=req.params;
+
+ const { name, email, password, isrole } = req.body;
+
+ const existingUser = await User.findOne({
+    $or: [{ name }, { email }],
+  });
+
+  if(existingUser){
+    throw new ApiError(409,"User aleardy exists");
+  }
+
+  const updateData={
+    name,
+    email,
+    password
+
+  }
+
+  const updatedUser=await User.findByIdAndUpdate(id,updateData,{
+    new:true,
+    runValidators:true,
+    context:"query",
+    select:"-password",
+  })
+
+  console.log(updatedUser);
+
+  return res.status(201).json(new ApiResponse(201,"User updated successfuly"))
 
 
-export { registerUser };
+})
+
+
+
+export {
+   registerUser ,
+   updateUser
+  
+  };
