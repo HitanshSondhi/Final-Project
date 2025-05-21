@@ -2,6 +2,7 @@ import { User } from "../HospitalModel/User.js";
 import { ApiError } from "../HospitalUtils/ApiError.js";
 import { ApiResponse } from "../HospitalUtils/ApiResponse.js";
 import { asynchandler } from "../HospitalUtils/asynchandler.js";
+import { sendEmail } from "../HospitalUtils/sendEmail.js";
 
 const registerUser = asynchandler(async (req, res) => {
   const { name, email, password, isrole } = req.body;
@@ -31,6 +32,11 @@ const registerUser = asynchandler(async (req, res) => {
   if (!createdUser) {
     throw new ApiError(500, "Something went wrong while registering the user");
   }
+  await sendEmail(
+    email,
+    "Welcome to Our Hospital!",
+    `<h2>Hello ${name},</h2><p>Your registration is successful. We're glad to have you onboard!</p>`
+  );
 
   return res
     .status(201)
@@ -112,6 +118,25 @@ const loginUser=asynchandler(async(req,res)=>{
         },"User Logged in successfully")
     )
   
+})
+
+const logoutUser=asynchandler(async(req,res)=>{
+  User.findByIdAndUpdate(
+    req.user._id,
+    {
+      $set:{
+        refreshToken:undefined
+      }
+    },
+    {
+      new:true
+    }
+  )
+  const options={
+        httpOnly:true,
+        secure:true
+    }
+  return res.status(200).clearCookie("accessToken",options).clearCookie("refereshToken",options).json(new ApiResponse(200,{},"User Loged Out Successfully"))
 })
 
 
