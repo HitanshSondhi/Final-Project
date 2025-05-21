@@ -16,12 +16,18 @@ const medicalRecordsSchema=mongoose.Schema({
         ref:"Prescription"
 
     },
-    bill:{
-        amount:Number,
-        time:Date
-    }
+    
+   bill: {
+  amount: Number,
+  time: {
+    type: Date,
+    default: Date.now
+  }
+},
+     
+    pdfUrl: String,
 
 },{timestamp:true})
 
 
-const medicalRecords=mongoose.model("MedicalRecords",medicalRecordsSchema);
+export const MedicalRecord=mongoose.model("MedicalRecord",medicalRecordsSchema);
