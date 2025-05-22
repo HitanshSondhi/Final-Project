@@ -1,32 +1,27 @@
 import nodemailer from "nodemailer";
 
-export const MedicalRecordsEmail = async (patient, reportFilePath) => {
-  try {
-    const transporter = nodemailer.createTransport({
-      service: "gmail",
-      auth: {
-        user: process.env.EMAIL_USER,
-        pass: process.env.EMAIL_PASS,
-      },
-    });
+export const MedicalRecordsEmail = async (user, pdfUrl) => {
+  const transporter = nodemailer.createTransport({
+    service: "gmail",
+    auth: {
+      user: process.env.EMAIL_USER,
+      pass: process.env.EMAIL_PASS,
+    },
+  });
 
-    const mailOptions = {
-      from: `"eClinic Pro" <${process.env.EMAIL_USER}>`,
-      to: patient.email,
-      subject: "Your Medical Report from eClinic Pro",
-      text: `Dear ${patient.name},\n\nYour medical report has been generated and is attached to this email.\n\nRegards,\neClinic Pro`,
-      attachments: [
-        {
-          filename: "MedicalReport.pdf",
-          path: reportFilePath,
-        },
-      ],
-    };
+  const mailOptions = {
+    from: `"Hospital Team" <${process.env.SMTP_USER}>`,
+    to: user.email,
+    subject: "Your Medical Prescription and Record",
+    html: `
+      <p>Dear ${user.name},</p>
+      <p>Your medical prescription and record has been securely saved.</p>
+      <p>You can download or view it here: <a href="${pdfUrl}" target="_blank">Download PDF</a></p>
+      <br/>
+      <p>Regards,</p>
+      <p>Hospital Team</p>
+    `,
+  };
 
-    const info = await transporter.sendMail(mailOptions);
-    console.log("Email sent:", info.response);
-  } catch (error) {
-    console.error("Error sending email:", error);
-    throw error;
-  }
+  await transporter.sendMail(mailOptions);
 };

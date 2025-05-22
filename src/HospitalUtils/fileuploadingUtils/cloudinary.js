@@ -12,15 +12,16 @@ const uploadOnCloudinary = async (localFilePath) => {
     if (!localFilePath) return null;
 
     const response = await cloudinary.uploader.upload(localFilePath, {
-      resource_type: 'auto',
+      resource_type: "raw", // important for non-image files like PDFs
+      folder: "eclinic/records",
     });
 
-    console.log('File uploaded to Cloudinary:', response.secure_url);
-    fs.unlinkSync(localFilePath); // remove temp file
-    return response;
+    console.log("File uploaded to Cloudinary:", response.secure_url);
+    fs.unlinkSync(localFilePath); // delete local temp file
+    return response; // contains secure_url, public_id, etc.
   } catch (error) {
-    if (fs.existsSync(localFilePath)) fs.unlinkSync(localFilePath); // clean up on error
-    console.error('Cloudinary upload error:', error);
+    if (fs.existsSync(localFilePath)) fs.unlinkSync(localFilePath);
+    console.error("Cloudinary upload error:", error);
     return null;
   }
 };

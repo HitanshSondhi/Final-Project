@@ -20,11 +20,11 @@ export const createMedicalRecord = asynchandler(async (req, res) => {
 
   let localFilePath = null;
 
-  // ✅ CASE 1: File is uploaded by doctor (skip PDF generation)
+  
   if (req.file) {
     localFilePath = req.file.path;
   } else {
-    // ✅ CASE 2: Manual fill-up – generate PDF
+   
     const filename = `${Date.now()}_prescription.pdf`;
     localFilePath = await generatePrescriptionPDF(
       {
@@ -38,16 +38,18 @@ export const createMedicalRecord = asynchandler(async (req, res) => {
     );
   }
 
-  // ✅ Upload to Cloudinary
+  
   const cloudRes = await uploadOnCloudinary(localFilePath);
   if (!cloudRes?.secure_url) {
     return res.status(500).json({ message: "Cloudinary upload failed" });
   }
 
-  // Delete local file after upload
-  if (fs.existsSync(localFilePath)) fs.unlinkSync(localFilePath);
+  
+  if (fs.existsSync(localFilePath)) {
+    fs.unlinkSync(localFilePath);
+  }
 
-  // ✅ Save record
+  
   const newRecord = new MedicalRecord({
     patient: patientId,
     doctor: doctorId,
@@ -62,13 +64,14 @@ export const createMedicalRecord = asynchandler(async (req, res) => {
 
   await newRecord.save();
 
-  // ✅ Send Email
+  
   await MedicalRecordsEmail(
-    { name: patientName, email: email },
-    localFilePath // or cloud URL
-  );
+  { name: patientName, email: email },
+  cloudRes.secure_url  
+);
 
-  res
-    .status(201)
-    .json({ message: "Record saved and email sent.", data: newRecord });
+  res.status(201).json({
+    message: "Medical record saved and email sent successfully.",
+    data: newRecord,
+  });
 });
