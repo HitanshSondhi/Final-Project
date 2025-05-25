@@ -4,6 +4,20 @@ import { ApiResponse } from "../HospitalUtils/ApiResponse.js";
 import { asynchandler } from "../HospitalUtils/asynchandler.js";
 import { sendEmail } from "../HospitalUtils/emailUtils/sendEmail.js";
 
+const generateAccessandRefreshToken = async (id) => {
+  try {
+    const user = await User.findById(id); // await was missing
+    const accessToken = user.generateAccessToken(); // () was missing
+    const refreshToken = user.generateRefreshToken();
+    user.refreshToken = refreshToken;
+    await user.save({ validateBeforeSave: false });
+
+    return { accessToken, refreshToken }; // ✅ must return the tokens
+  } catch (error) {
+    throw new ApiError(501, "Problem occurred while generating tokens");
+  }
+};
+
 const registerUser = asynchandler(async (req, res) => {
   const { name, email, password, isrole } = req.body;
 
@@ -74,19 +88,6 @@ const updateUser = asynchandler(async (req, res) => {
   return res.status(201).json(new ApiResponse(201, "User updated successfuly"));
 });
 
-const generateAccessandRefreshToken = async (id) => {
-  try {
-    const user = await User.findById(id); // await was missing
-    const accessToken = user.generateAccessToken(); // () was missing
-    const refreshToken = user.generateRefreshToken();
-    user.refreshToken = refreshToken;
-    await user.save({ validateBeforeSave: false });
-
-    return { accessToken, refreshToken }; // ✅ must return the tokens
-  } catch (error) {
-    throw new ApiError(501, "Problem occurred while generating tokens");
-  }
-};
 
 const loginUser=asynchandler(async(req,res)=>{
   const{name,email,password,role}=req.body;
