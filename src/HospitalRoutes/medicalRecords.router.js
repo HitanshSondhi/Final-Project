@@ -1,5 +1,5 @@
 import express from "express";
-import upload from "../HospitalUtils/fileuploadingUtils/upload.js";
+import upload from "../middleware/upload.js";
 import { createMedicalRecord } from "../HospitalController/medicalRecord.controller.js";
 
 const medicalRecordRouter = express.Router();

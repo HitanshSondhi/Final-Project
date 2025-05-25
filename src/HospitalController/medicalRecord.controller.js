@@ -1,9 +1,9 @@
 import fs from "fs";
 import { MedicalRecord } from "../HospitalModel/MedicalRecord.js";
 import { asynchandler } from "../HospitalUtils/asynchandler.js";
+import { MedicalRecordsEmail } from "../HospitalUtils/emailUtils/medicalEmail.js";
 import { uploadOnCloudinary } from "../HospitalUtils/fileuploadingUtils/cloudinary.js";
-import { generatePrescriptionPDF } from "../HospitalUtils/generatePrescriptionPDF.js";
-import { MedicalRecordsEmail } from "../HospitalUtils/medicalEmail.js";
+import { generatePrescriptionPDF } from "../HospitalUtils/fileuploadingUtils/generatePrescriptionPDF.js";
 
 export const createMedicalRecord = asynchandler(async (req, res) => {
   const {

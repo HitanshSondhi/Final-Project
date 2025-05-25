@@ -2,7 +2,7 @@ import { User } from "../HospitalModel/User.js";
 import { ApiError } from "../HospitalUtils/ApiError.js";
 import { ApiResponse } from "../HospitalUtils/ApiResponse.js";
 import { asynchandler } from "../HospitalUtils/asynchandler.js";
-import { sendEmail } from "../HospitalUtils/sendEmail.js";
+import { sendEmail } from "../HospitalUtils/emailUtils/sendEmail.js";
 
 const registerUser = asynchandler(async (req, res) => {
   const { name, email, password, isrole } = req.body;
@@ -140,4 +140,4 @@ const logoutUser=asynchandler(async(req,res)=>{
 })
 
 
-export { registerUser, updateUser,loginUser };
+export { registerUser, updateUser,loginUser,logoutUser };

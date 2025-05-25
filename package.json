@@ -15,10 +15,13 @@
   "author": "",
   "license": "ISC",
   "dependencies": {
+    "agenda": "^5.0.0",
+    "axios": "^1.9.0",
     "bcrypt": "^6.0.0",
     "cloudinary": "^2.6.0",
     "cookie-parser": "^1.4.7",
     "cors": "^2.8.5",
+    "docker": "^1.0.0",
     "dotenv": "^16.4.7",
     "express": "^4.21.2",
     "jsonwebtoken": "^9.0.2",
@@ -27,6 +30,7 @@
     "multer": "^2.0.0",
     "nodemailer": "^7.0.3",
     "pdfkit": "^0.17.1",
+    "razorpay": "^2.9.6",
     "twilio": "^5.6.1"
   },
   "devDependencies": {
