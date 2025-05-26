@@ -16,6 +16,8 @@ app.use(express.json({ limit: "20kb" }));
 app.use(express.urlencoded({ extended: true, limit: "20kb" }));
 app.use(express.static("public"));
 app.use(cookieParser());
+
+//Api Callings
 app.use("/api/v1/users",Userouter);
 app.use("/api/v1/medical-records", medicalRecordRouter); 
 app.use("/api/v1/payment", paymentRouter); 
