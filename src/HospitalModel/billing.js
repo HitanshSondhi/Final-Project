@@ -20,7 +20,7 @@ const billingSchmema=mongoose.model({
     paymentMethod:{
         type:String,
         enum:["cash","card","insurance","upi"],
-        default:cash
+        default:"cash"
     },
     paidAt:Date,
 
