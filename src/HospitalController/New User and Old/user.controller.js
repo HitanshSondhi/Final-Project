@@ -1,8 +1,8 @@
-import { User } from "../HospitalModel/User.js";
-import { ApiError } from "../HospitalUtils/ApiError.js";
-import { ApiResponse } from "../HospitalUtils/ApiResponse.js";
-import { asynchandler } from "../HospitalUtils/asynchandler.js";
-import { sendEmail } from "../HospitalUtils/emailUtils/sendEmail.js";
+import { User } from "../../HospitalModel/User.js";
+import { ApiError } from "../../HospitalUtils/ApiError.js";
+import { ApiResponse } from "../../HospitalUtils/ApiResponse.js";
+import { asynchandler } from "../../HospitalUtils/asynchandler.js";
+import { sendEmail } from "../../HospitalUtils/emailUtils/sendEmail.js";
 
 const generateAccessandRefreshToken = async (id) => {
   try {
