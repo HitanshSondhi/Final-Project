@@ -1,11 +1,11 @@
 import jwt from "jsonwebtoken";
-import { user } from "../HospitalModel/User";
+import { User } from "../HospitalModel/user.js";
 import { asynchandler } from "../HospitalUtils/asynchandler.js";
-import { ApiError } from "../utils/Apierror.js";
+import { ApiError } from "../HospitalUtils/ApiError.js";
 
 export const verifyJWT = asynchandler(async (req, res, next) => {
   try {
-    const token = req.cookies?.accesstoken || req.header("Authorization")?.replace("Bearer ", "");
+  const token = req.cookies?.accessToken || req.header("Authorization")?.replace("Bearer ", "");
 
     if (!token) {
       throw new ApiError(401, "Unauthorized request");
@@ -13,7 +13,7 @@ export const verifyJWT = asynchandler(async (req, res, next) => {
 
     const decodedtoken = jwt.verify(token, process.env.ACCESS_TOKEN_SECRET);
 
-    const user = await user.findById(decodedtoken?._id).select("-password" ,"-refreshToken");
+    const user = await User.findById(decodedtoken?._id).select("-password -refreshToken");
 
     if (!user) {
       throw new ApiError(401, "Invalid Access Token");

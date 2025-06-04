@@ -101,7 +101,7 @@ const loginUser=asynchandler(async(req,res)=>{
     throw new ApiError(404,"User doesn't exist");
   }
 
-  const isPasswordValid=user.isPasswordCorrect(password)
+  const isPasswordValid = await user.isPasswordCorrect(password)
   if(!isPasswordValid){
     throw new ApiError(401,"invalid credentials");
   }
@@ -137,7 +137,7 @@ const logoutUser=asynchandler(async(req,res)=>{
         httpOnly:true,
         secure:true
     }
-  return res.status(200).clearCookie("accessToken",options).clearCookie("refereshToken",options).json(new ApiResponse(200,{},"User Loged Out Successfully"))
+  return res.status(200).clearCookie("accessToken",options).clearCookie("refreshToken",options).json(new ApiResponse(200,{},"User Loged Out Successfully"))
 })
 
 
