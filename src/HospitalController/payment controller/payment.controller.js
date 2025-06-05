@@ -2,7 +2,7 @@ import Payment from "../../HospitalModel/payment.js";
 import Razorpay from "razorpay";
 import crypto from "crypto";
 import { User } from "../../HospitalModel/User.js";
-import { sendReceiptEmail } from "../../HospitalUtils/emailUtils/sendRecieptEmail.js";
+import { sendEmail } from "../../HospitalUtils/emailUtils/sendEmail.js";
 
 const razorpay = new Razorpay({
   key_id: process.env.RAZORPAY_KEY,
