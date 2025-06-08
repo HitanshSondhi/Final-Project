@@ -4,6 +4,8 @@ import { ApiError } from "../../HospitalUtils/ApiError.js";
 import { ApiResponse } from "../../HospitalUtils/ApiResponse.js";
 import { asynchandler } from "../../HospitalUtils/asynchandler.js";
 import { sendEmail } from "../../HospitalUtils/emailUtils/sendEmail.js";
+import { parseEnvToSeconds } from "../../HospitalUtils/redis/redisUtils.js";
+import { redis } from "../../db/connectRedis.js";
 
 const generateAccessandRefreshToken = async (id) => {
   try {
@@ -19,109 +21,110 @@ const generateAccessandRefreshToken = async (id) => {
   }
 };
 
+const generateOTP = () => Math.floor(100000 + Math.random() * 900000).toString();
+
 const registerUser = asynchandler(async (req, res) => {
   const { name, email, password, isrole } = req.body;
 
   if ([name, email, password, isrole].some((field) => !field?.trim())) {
-    throw new ApiError(401, "All fields are required");
+    throw new ApiError(400, "All fields are required");
   }
 
   const existedUser = await User.findOne({ $or: [{ name }, { email }] });
-  if (existedUser) throw new ApiError(401, "Username or email already exists");
+  if (existedUser) throw new ApiError(409, "Username or email already exists");
 
-  const emailOTP = Math.floor(100000 + Math.random() * 900000).toString();
-  const emailOTPExpiry = Date.now() + 1000 * 60 * 5;
+  const otp = generateOTP();
+  const userPayload = JSON.stringify({ name, email, password, isrole });
+
+  await redis.set(`otp:${email}`, otp, "EX", 300); // 5 min
+  await redis.set(`registerPayload:${email}`, userPayload, "EX", 600); // store input for later
+  await redis.set(`resendCount:${email}`, 0, "EX", 900);
+
+  await sendEmail({
+    to: email,
+    subject: "eClinic Pro | Your OTP",
+    html: `<h2>Hello ${name},</h2>
+           <p>Your OTP for registration is:</p>
+           <h3>${otp}</h3>
+           <p>This OTP will expire in 5 minutes.</p>`
+  });
+
+  return res.status(200).json(new ApiResponse(200, {}, "OTP sent to email. Please verify to complete registration."));
+});
+
+const verifyUser = asynchandler(async (req, res) => {
+  const { email, otp } = req.body;
+
+  if (!email || !otp) throw new ApiError(400, "Email and OTP are required");
+
+  const savedOtp = await redis.get(`otp:${email}`);
+  const payload = await redis.get(`registerPayload:${email}`);
+
+  if (!savedOtp || savedOtp !== otp || !payload) {
+    throw new ApiError(400, "Invalid or expired OTP");
+  }
+
+  const { name, password, isrole } = JSON.parse(payload);
+
+  const alreadyExists = await User.findOne({ $or: [{ name }, { email }] });
+  if (alreadyExists) throw new ApiError(409, "User already exists");
 
   const user = await User.create({
     name,
     email,
     password,
     isrole,
-    emailOTP,
-    emailOTPExpiry,
-    resendOTPCounter: 0,
-    resendOTPWindowStart: new Date(),
-    lastResendAt: new Date()
+    isVerified: true,
+    isApproved: true,
   });
 
-  await sendEmail({
-    to: email,
-    subject: "Your Email Verification OTP",
-    html: `<h2>Hello ${name},</h2>
-           <p>Your OTP for email verification is:</p>
-           <h3>${emailOTP}</h3>
-           <p>This OTP will expire in 5 minutes.</p>`
-  });
+  await redis.del(`otp:${email}`);
+  await redis.del(`registerPayload:${email}`);
+  await redis.del(`resendCount:${email}`);
 
-  return res.status(201).json(
-    new ApiResponse(201, "Registration successful. OTP sent to your email.")
-  );
+  return res.status(201).json(new ApiResponse(201, user, "Email verified and user registered successfully."));
 });
+
+
 
 const verifyEmail = asynchandler(async (req, res) => {
   const { email, otp } = req.body;
+  if (!email || !otp) throw new ApiError(400, "Email and OTP are required");
 
-  if (!email || !otp) {
-    throw new ApiError(400, "Email and OTP are required");
-  }
-
-  const user = await User.findOne({ email });
-
-  if (!user || user.emailOTP !== otp || user.emailOTPExpiry < Date.now()) {
+  const savedOtp = await redis.get(`otp:${email}`);
+  if (!savedOtp || savedOtp !== otp) {
     throw new ApiError(400, "Invalid or expired OTP");
   }
 
-  user.isVerified = true;
-  user.emailOTP = undefined;
-  user.emailOTPExpiry = undefined;
-  user.resendOTPCounter = 0;
-  user.resendOTPWindowStart = undefined;
-  user.lastResendAt = undefined;
-
-  await user.save({ validateBeforeSave: false });
+  await User.findOneAndUpdate({ email }, { isVerified: true });
+  await redis.del(`otp:${email}`);
+  await redis.del(`resendCount:${email}`);
+  await redis.del(`cooldown:${email}`);
 
   return res.status(200).json(new ApiResponse(200, {}, "Email verified successfully"));
 });
 
 const resendOTP = asynchandler(async (req, res) => {
   const { email } = req.body;
-
-  if (!email) {
-    throw new ApiError(400, "Email is required");
-  }
+  if (!email) throw new ApiError(400, "Email is required");
 
   const user = await User.findOne({ email });
-
   if (!user) throw new ApiError(404, "User not found");
   if (user.isVerified) throw new ApiError(400, "User is already verified");
 
-  const now = Date.now();
-  const windowDuration = 15 * 60 * 1000; // 15 minutes
-  const cooldown = 60 * 1000; // 1 minute
+  const cooldown = await redis.get(`cooldown:${email}`);
+  const resendCount = await redis.get(`resendCount:${email}`);
 
-  if (!user.resendOTPWindowStart || now - user.resendOTPWindowStart.getTime() > windowDuration) {
-    user.resendOTPCounter = 0;
-    user.resendOTPWindowStart = new Date();
-  }
-
-  if (user.lastResendAt && now - user.lastResendAt.getTime() < cooldown) {
-    const waitTime = Math.ceil((cooldown - (now - user.lastResendAt.getTime())) / 1000);
-    throw new ApiError(429, `Please wait ${waitTime} seconds before requesting another OTP`);
-  }
-
-  if (user.resendOTPCounter >= 3) {
+  if (cooldown) throw new ApiError(429, "Wait 1 minute before requesting another OTP");
+  if (resendCount && parseInt(resendCount) >= 3) {
     throw new ApiError(429, "Maximum OTP resend limit reached. Try again after 15 minutes");
   }
 
-  const newOTP = Math.floor(100000 + Math.random() * 900000).toString();
-  const newExpiry = Date.now() + 1000 * 60 * 5;
-
-  user.emailOTP = newOTP;
-  user.emailOTPExpiry = newExpiry;
-  user.resendOTPCounter += 1;
-  user.lastResendAt = new Date();
-
-  await user.save({ validateBeforeSave: false });
+  const newOTP = generateOTP();
+  await redis.set(`otp:${email}`, newOTP, "EX", 300);
+  await redis.set(`cooldown:${email}`, 1, "EX", 60);
+  await redis.incr(`resendCount:${email}`);
+  await redis.expire(`resendCount:${email}`, 900);
 
   await sendEmail({
     to: email,
@@ -197,5 +200,6 @@ export {
   resendOTP,
   loginUser,
   logoutUser,
-  updateUser
+  updateUser,
+  verifyUser
 };

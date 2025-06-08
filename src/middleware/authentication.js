@@ -1,7 +1,7 @@
 import jwt from "jsonwebtoken";
-import { User } from "../HospitalModel/user.js";
-import { asynchandler } from "../HospitalUtils/asynchandler.js";
+import { User } from "../HospitalModel/User.js";
 import { ApiError } from "../HospitalUtils/ApiError.js";
+import { asynchandler } from "../HospitalUtils/asynchandler.js";
 
 export const verifyJWT = asynchandler(async (req, res, next) => {
   try {
@@ -25,3 +25,4 @@ export const verifyJWT = asynchandler(async (req, res, next) => {
     throw new ApiError(401, "Invalid Access Token");
   }
 });
+
