@@ -4,6 +4,7 @@ import cors from "cors";
 import express from "express";
 import medicalRecordRouter from "./HospitalRoutes/medicalRecords.router.js";
 import paymentRouter from "./HospitalRoutes/payment.router.js";
+import pdfOptimization from "./HospitalUtils/fileuploadingUtils/setupPDFOptimization.js";
 
 const app=express()
 

@@ -2,6 +2,7 @@ import { MedicalRecord } from "../../HospitalModel/MedicalRecord.js";
 import { asynchandler } from "../../HospitalUtils/asynchandler.js";
 import { sendEmail } from "../../HospitalUtils/emailUtils/sendEmail.js";
 import { PDFGenerator } from "../../HospitalUtils/fileuploadingUtils/generatePrescriptionPDF.js";
+import { FastPrescriptionPDF } from "../../HospitalUtils/fileuploadingUtils/fastPrescriptionPDF.js";
 
 export const createMedicalRecord = asynchandler(async (req, res) => {
   const {
@@ -26,22 +27,50 @@ export const createMedicalRecord = asynchandler(async (req, res) => {
     }
     prescriptionPdfUrl = cloudRes.secure_url;
   } else {
-    // Generate prescription PDF from HTML
-    const html = buildPrescriptionHTML({
-      doctorName,
-      patientName,
-      diagnosis,
-      notes,
-      prescriptionDetails: JSON.parse(prescriptionDetails),
-    });
-
+    // Use ultra-fast prescription PDF generator (under 2 seconds)
     const filename = `${Date.now()}_prescription.pdf`;
+    const prescriptionData = JSON.parse(prescriptionDetails || '[]');
+    
+    // Extract medications in the format expected by FastPrescriptionPDF
+    const medications = prescriptionData.map(med => ({
+      name: med.medicine || med.name,
+      dosage: med.dosage,
+      frequency: med.frequency || 'As directed',
+      duration: med.duration,
+      instructions: med.instructions || 'Take as prescribed'
+    }));
 
-    prescriptionPdfUrl = await PDFGenerator.generate({
-      html,
-      filename,
-      folder: "prescriptions"
-    });
+    try {
+      // Try fast PDF generation first (target: under 2 seconds)
+      prescriptionPdfUrl = await FastPrescriptionPDF.generatePrescription({
+        doctorName,
+        hospitalName: 'eClinic Pro',
+        hospitalAddress: '123 Health Ave, Wellness City, IN 302019',
+        patientName,
+        diagnosis,
+        medications,
+        notes,
+        filename,
+        folder: "prescriptions"
+      });
+    } catch (fastError) {
+      console.warn('Fast PDF generation failed, falling back to browser-based generation:', fastError);
+      
+      // Fallback to original HTML-based generation
+      const html = buildPrescriptionHTML({
+        doctorName,
+        patientName,
+        diagnosis,
+        notes,
+        prescriptionDetails: prescriptionData,
+      });
+
+      prescriptionPdfUrl = await PDFGenerator.generateWithFallback({
+        html,
+        filename,
+        folder: "prescriptions"
+      });
+    }
   }
 
   const newRecord = new MedicalRecord({
