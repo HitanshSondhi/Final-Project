@@ -8,14 +8,7 @@ const transporter = nodemailer.createTransport({
   },
 });
 
-/**
- * Sends an email with or without attachments
- * @param {Object} options - Email options
- * @param {string} options.to - Recipient email
- * @param {string} options.subject - Email subject
- * @param {string} options.html - HTML content
- * @param {Array} [options.attachments] - Array of {filename, path}
- */
+
 export const sendEmail = async ({ to, subject, html, attachments = [] }) => {
   if (!to || !subject || !html) {
     throw new Error("Missing email to, subject, or HTML content");
