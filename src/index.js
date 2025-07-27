@@ -3,6 +3,7 @@ import connectDB from "./db/index.js";
 import dotenv from "dotenv";
 import { app } from "./app.js";
 import { connectRedis } from "./db/connectRedis.js";
+import { agenda } from "./jobs/agenda.js";
 
 dotenv.config({
     path: './.env' // Correct path to your .env file
@@ -14,6 +15,7 @@ const startServer = async () => {
   try {
     await connectDB();
     await connectRedis();
+    await agenda.start();
 
     app.listen(process.env.PORT || 3000, () => {
       console.log(`🚀 Server running on port ${process.env.PORT}`);
