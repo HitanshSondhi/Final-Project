@@ -5,7 +5,7 @@ import { PDFGenerator } from "../HospitalUtils/fileuploadingUtils/generatePrescr
 
 const agenda = new Agenda({ db: { address: process.env.MONGODB_URL, collection: 'agendaJobs' } });
 
-// Define the job
+
 agenda.define('generate-and-send-prescription', async (job) => {
   const {
     recordId,
