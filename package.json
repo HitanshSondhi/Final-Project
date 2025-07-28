@@ -5,7 +5,10 @@
   "type": "module",
   "main": "index.js",
   "scripts": {
-    "dev": "nodemon src/index.js"
+    "dev": "nodemon src/index.js",
+    "client": "cd client && npm start",
+    "server": "nodemon src/index.js",
+    "start": "concurrently \"npm run server\" \"npm run client\""
   },
   "keywords": [
     "sigIn",
@@ -39,6 +42,7 @@
     "twilio": "^5.6.1"
   },
   "devDependencies": {
+    "concurrently": "^8.2.2",
     "nodemon": "^3.1.9",
     "prettier": "^3.5.2"
   }
