@@ -11,6 +11,8 @@ const connectRedis = async () => {
       host: "redis-14406.c301.ap-south-1-1.ec2.redns.redis-cloud.com",
       port: 14406,
       password: "dO7dZ1PyF67DEUvlAbNtncY4HxE2mShU",
+      maxRetriesPerRequest: null, 
+      enableReadyCheck: true,
       
     });
 

@@ -2,6 +2,7 @@ import Userouter from "./HospitalRoutes/user.routes.js";
 import cookieParser from "cookie-parser";
 import cors from "cors";
 import express from "express";
+import letterRouter from "./HospitalRoutes/letter.router.js";
 import medicalRecordRouter from "./HospitalRoutes/medicalRecords.router.js";
 import paymentRouter from "./HospitalRoutes/payment.router.js";
 
@@ -21,5 +22,6 @@ app.use(cookieParser());
 app.use("/api/v1/users",Userouter);
 app.use("/api/v1/medical-records", medicalRecordRouter); 
 app.use("/api/v1/payment", paymentRouter); 
+app.use("/api/v1/letters", letterRouter);
 
 export { app };
