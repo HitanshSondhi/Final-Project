@@ -9,7 +9,7 @@ import { initLetterQueue } from "./jobs/letter.queue.js";
 await initLetterQueue();
 
 dotenv.config({
-    path: './.env' // Correct path to your .env file
+    path: './.env' 
 });
 
 

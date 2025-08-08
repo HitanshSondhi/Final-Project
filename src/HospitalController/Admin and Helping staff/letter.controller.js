@@ -18,7 +18,7 @@ const generateAndScheduleLetter = async (res, letterDetails) => {
         name, 
         to: email,
         subject: subject,
-        html: `<p>Dear ${name},</p><p>Please find your official letter from Your Hospital Name attached to this email.</p><p>Regards,<br/>The Management</p>`,
+        html: `<p>Dear ${name},</p><p>Please find your official letter from eClinicPro attached to this email.</p><p>Regards,<br/>The Management</p>`,
         attachments: [{
             filename: pdfFilename,
             path: pdfUrl,
@@ -53,7 +53,7 @@ export const generateAcceptanceLetter = asynchandler(async (req, res) => {
                 <p><strong>${name}</strong><br>${address}</p><br>
                 <h3 style="color: #007BFF;">Subject: Offer of Employment</h3>
                 <p>Dear ${name},</p>
-                <p>Following our recent discussions, we are delighted to offer you the position of <strong>${position}</strong> at Your Hospital Name. We were impressed with your qualifications and believe you will be a valuable asset to our team.</p>
+                <p>Following our recent discussions, we are delighted to offer you the position of <strong>${position}</strong> at eClinicPro. We were impressed with your qualifications and believe you will be a valuable asset to our team.</p>
                 <p>Your employment will commence on <strong>${startDate}</strong>, reporting to <strong>${reportingManager}</strong>. Your annual salary will be <strong>$${salary}</strong>, payable in monthly installments.</p>
                 <p>We are excited about the prospect of you joining us.</p>
                 <div class="signature">
@@ -78,7 +78,7 @@ export const generatePromotionLetter = asynchandler(async (req, res) => {
             <style>.header{display:flex;justify-content:space-between;align-items:flex-start;padding-bottom:20px;border-bottom:2px solid #28a745}.header img{max-height:70px}.header .clinic-info{text-align:right;font-size:12px;color:#555}.content{padding:20px 0}.signature{margin-top:40px;text-align:left}.footer{text-align:center;font-size:12px;color:#777;padding-top:20px;border-top:1px solid #eee;margin-top:40px}</style>
             <div class="header">
                 <img src="${logoUrl}" alt="Hospital Logo">
-                <div class="clinic-info"><strong>Your Hospital Name</strong><br>Karigiri, Tamil Nadu, India</div>
+                <div class="clinic-info"><strong>eClinicPro</strong><br>Karigiri, Tamil Nadu, India</div>
             </div>
             <div class="content">
                 <p style="text-align: right;"><strong>Date:</strong> ${currentDate}</p>
