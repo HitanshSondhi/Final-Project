@@ -4,7 +4,7 @@ import { createMedicalRecord } from "../HospitalController/Admin and Helping sta
 
 const medicalRecordRouter = express.Router();
 
-// Accept either file upload or manual form
+
 medicalRecordRouter.post("/create", upload.single("pdfFile"), createMedicalRecord);
 
 export default medicalRecordRouter;
