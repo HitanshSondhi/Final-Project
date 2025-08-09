@@ -36,8 +36,8 @@ const registerUser = asynchandler(async (req, res) => {
   const otp = generateOTP();
   const userPayload = JSON.stringify({ name, email, password, isrole });
 
-  await redis.set(`otp:${email}`, otp, "EX", 300); // 5 min
-  await redis.set(`registerPayload:${email}`, userPayload, "EX", 600); // store input for later
+  await redis.set(`otp:${email}`, otp, "EX", 300); 
+  await redis.set(`registerPayload:${email}`, userPayload, "EX", 600); 
   await redis.set(`resendCount:${email}`, 0, "EX", 900);
 
   await sendEmail({
