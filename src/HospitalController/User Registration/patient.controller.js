@@ -24,9 +24,10 @@ const generateAccessandRefreshToken = async (id) => {
 const generateOTP = () => Math.floor(100000 + Math.random() * 900000).toString();
 
 const registerUser = asynchandler(async (req, res) => {
-  const { name, email, password, isrole } = req.body;
+  
+  const { name, email, password, } = req.body;
 
-  if ([name, email, password, isrole].some((field) => !field?.trim())) {
+  if ([name, email, password].some((field) => !field?.trim())) {
     throw new ApiError(400, "All fields are required");
   }
 
@@ -34,7 +35,7 @@ const registerUser = asynchandler(async (req, res) => {
   if (existedUser) throw new ApiError(409, "Username or email already exists");
 
   const otp = generateOTP();
-  const userPayload = JSON.stringify({ name, email, password, isrole });
+  const userPayload = JSON.stringify({ name, email, password });
 
   await redis.set(`otp:${email}`, otp, "EX", 300); 
   await redis.set(`registerPayload:${email}`, userPayload, "EX", 600); 
@@ -53,9 +54,9 @@ const registerUser = asynchandler(async (req, res) => {
 });
 
 const verifyUser = asynchandler(async (req, res) => {
-  const { email, otp } = req.body;
+  const { otp,email } = req.body;
 
-  if (!email || !otp) throw new ApiError(400, "Email and OTP are required");
+  if (!otp) throw new ApiError(400, "Email and OTP are required");
 
   const savedOtp = await redis.get(`otp:${email}`);
   const payload = await redis.get(`registerPayload:${email}`);
@@ -73,7 +74,6 @@ const verifyUser = asynchandler(async (req, res) => {
     name,
     email,
     password,
-    isrole,
     isVerified: true,
     isApproved: true,
   });
@@ -87,22 +87,7 @@ const verifyUser = asynchandler(async (req, res) => {
 
 
 
-const verifyEmail = asynchandler(async (req, res) => {
-  const { email, otp } = req.body;
-  if (!email || !otp) throw new ApiError(400, "Email and OTP are required");
 
-  const savedOtp = await redis.get(`otp:${email}`);
-  if (!savedOtp || savedOtp !== otp) {
-    throw new ApiError(400, "Invalid or expired OTP");
-  }
-
-  await User.findOneAndUpdate({ email }, { isVerified: true });
-  await redis.del(`otp:${email}`);
-  await redis.del(`resendCount:${email}`);
-  await redis.del(`cooldown:${email}`);
-
-  return res.status(200).json(new ApiResponse(200, {}, "Email verified successfully"));
-});
 
 const resendOTP = asynchandler(async (req, res) => {
   const { email } = req.body;
@@ -196,7 +181,6 @@ const updateUser = asynchandler(async (req, res) => {
 
 export {
   registerUser,
-  verifyEmail,
   resendOTP,
   loginUser,
   logoutUser,

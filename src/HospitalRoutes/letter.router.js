@@ -4,7 +4,7 @@ import {
     generateAcceptanceLetter,
     generatePromotionLetter,
     generateTerminationLetter
-} from "../HospitalController/Admin and Helping staff/letter.controller.js";
+} from "../HospitalController/Admin Side/letter.controller.js";
 
 const router = Router();
 

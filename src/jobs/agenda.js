@@ -32,10 +32,9 @@ agenda.define('generate-and-send-prescription', async (job) => {
     folder: "prescriptions",
   });
 
-  // 2. Update the medical record with the PDF URL
+  
   await MedicalRecord.findByIdAndUpdate(recordId, { pdfUrl: prescriptionPdfUrl });
 
-  // 3. Send the email with the attachment
   await sendEmail({
     to: email,
     subject: "Your eClinic Pro Medical Prescription",
@@ -55,7 +54,7 @@ agenda.define('generate-and-send-prescription', async (job) => {
   });
 });
 
-// Start Agenda
+
 (async function () {
   await agenda.start();
   console.log('📢 Agenda started!');
@@ -63,7 +62,7 @@ agenda.define('generate-and-send-prescription', async (job) => {
 
 export { agenda };
 
-// Keep the buildPrescriptionHTML function as it is
+
 function buildPrescriptionHTML({ doctorName, patientName, diagnosis, notes, prescriptionDetails }) {
     const sanitize = (text) => String(text || "").replace(/[^\x00-\x7F]/g, "");
 
