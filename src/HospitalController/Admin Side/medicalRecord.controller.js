@@ -4,7 +4,7 @@ import { sendEmail } from "../../HospitalUtils/emailUtils/sendEmail.js";
 import { PDFGenerator } from "../../HospitalUtils/fileuploadingUtils/generatePrescriptionPDF.js";
 import { agenda } from "../../jobs/agenda.js";
 
-export const createMedicalRecord = asynchandler(async (req, res) => {
+ const createMedicalRecord = asynchandler(async (req, res) => {
   const {
     patientId,
     patientName,
@@ -49,3 +49,4 @@ export const createMedicalRecord = asynchandler(async (req, res) => {
     data: newRecord,
   });
 });
+export default createMedicalRecord;

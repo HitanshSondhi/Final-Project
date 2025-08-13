@@ -73,7 +73,7 @@ const verifyDoctor = asynchandler(async (req, res) => {
     password,
     department,
     specialization,
-    slots,
+    availableSlots: slots,
     isVerified: true,
     isApproved: true,
   });
@@ -82,9 +82,10 @@ const verifyDoctor = asynchandler(async (req, res) => {
   await redis.del(`doctorRegisterPayload:${email}`);
   await redis.del(`doctorResendCount:${email}`);
 
-  return res.status(201).json(new ApiResponse(201, doctor, "Doctor registered successfully"));
+  return res
+    .status(201)
+    .json(new ApiResponse(201, doctor, "Doctor registered successfully"));
 });
-
 
 const loginDoctor = asynchandler(async (req, res) => {
   const { email, password } = req.body;
@@ -122,9 +123,46 @@ const logoutDoctor = asynchandler(async (req, res) => {
     .json(new ApiResponse(200, {}, "Doctor logged out successfully"));
 });
 
+const resendOTP = asynchandler(async (req, res) => {
+  const { email } = req.body;
+  if (!email) throw new ApiError(400, "Email is required");
+
+  const cooldown = await redis.get(`cooldown:${email}`);
+  const resendCount = await redis.get(`resendCount:${email}`);
+
+  if (cooldown) throw new ApiError(429, "Wait 1 minute before requesting another OTP");
+  if (resendCount && parseInt(resendCount) >= 3) {
+    throw new ApiError(429, "Maximum OTP resend limit reached. Try again after 15 minutes");
+  }
+
+  // ✅ Fetch the pre-registration payload from Redis
+  const payload = await redis.get(`doctorRegisterPayload:${email}`);
+  if (!payload) throw new ApiError(404, "No pending registration found for this email");
+
+  const { name } = JSON.parse(payload);
+
+  const newOTP = generateOTP();
+  await redis.set(`doctorOtp:${email}`, newOTP, "EX", 300); // 5 min expiry
+  await redis.set(`cooldown:${email}`, 1, "EX", 60); // 1 min cooldown
+  await redis.incr(`resendCount:${email}`);
+  await redis.expire(`resendCount:${email}`, 900); // reset after 15 mins
+
+  await sendEmail({
+    to: email,
+    subject: "Your New OTP - eClinic Pro",
+    html: `<h2>Hello ${name},</h2>
+           <p>Your new OTP is:</p>
+           <h3>${newOTP}</h3>
+           <p>This OTP is valid for the next 5 minutes.</p>`
+  });
+
+  return res.status(200).json(new ApiResponse(200, {}, "OTP resent successfully"));
+});
+
 export {
   registerDoctor,
   verifyDoctor,
   loginDoctor,
-  logoutDoctor
+  logoutDoctor,
+  resendOTP
 };

@@ -25,7 +25,7 @@ const generateOTP = () => Math.floor(100000 + Math.random() * 900000).toString()
 
 const registerUser = asynchandler(async (req, res) => {
   
-  const { name, email, password, } = req.body;
+  const { name, email, password } = req.body;
 
   if ([name, email, password].some((field) => !field?.trim())) {
     throw new ApiError(400, "All fields are required");
@@ -93,9 +93,7 @@ const resendOTP = asynchandler(async (req, res) => {
   const { email } = req.body;
   if (!email) throw new ApiError(400, "Email is required");
 
-  const user = await User.findOne({ email });
-  if (!user) throw new ApiError(404, "User not found");
-  if (user.isVerified) throw new ApiError(400, "User is already verified");
+  
 
   const cooldown = await redis.get(`cooldown:${email}`);
   const resendCount = await redis.get(`resendCount:${email}`);

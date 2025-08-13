@@ -13,9 +13,15 @@ const doctorSchema = new mongoose.Schema(
     address: String,
 
     department: { type: String, required: true }, // e.g., Cardiology, Neurology
-    qualifications: { type: String, required: true }, // e.g., MBBS, MD
+     // e.g., MBBS, MD
     experience: { type: Number, default: 0 }, // Years of experience
-    availableSlots: [String], // e.g., ["09:00", "10:00", "14:00"]
+    availableSlots: [
+    {
+      day: { type: String, required: true },
+      start: { type: String, required: true },
+      end: { type: String, required: true }
+    }
+  ],// e.g., ["09:00", "10:00", "14:00"]
     image: String, // Profile picture
 
     isApproved: { type: Boolean, default: false }, // Admin approval

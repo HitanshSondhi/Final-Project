@@ -1,3 +1,4 @@
+import Doctorouter from "./HospitalRoutes/doctor.router.js";
 import Userouter from "./HospitalRoutes/user.routes.js";
 import cookieParser from "cookie-parser";
 import cors from "cors";
@@ -23,5 +24,6 @@ app.use("/api/v1/users",Userouter);
 app.use("/api/v1/medical-records", medicalRecordRouter); 
 app.use("/api/v1/payment", paymentRouter); 
 app.use("/api/v1/letters", letterRouter);
+app.use("/api/v1/doctor",Doctorouter)
 
 export { app };
