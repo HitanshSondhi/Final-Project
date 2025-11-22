@@ -8,12 +8,12 @@ let redis = null;
 const connectRedis = async () => {
   try {
     redis = new Redis({
-      host: "redis-14406.c301.ap-south-1-1.ec2.redns.redis-cloud.com",
-      port: 14406,
-      password: "dO7dZ1PyF67DEUvlAbNtncY4HxE2mShU",
-      maxRetriesPerRequest: null, 
+      host: "redis-15248.c99.us-east-1-4.ec2.cloud.redislabs.com", // ❌ removed :15248
+      port: 15248,
+      password: "8y2OTJ7mfY1QoLyfpstcPQ3Lwk9u5BZY",
+      maxRetriesPerRequest: null,
       enableReadyCheck: true,
-      
+      tls: {} // IMPORTANT for Redis Cloud
     });
 
     redis.on("connect", () => {
@@ -24,7 +24,7 @@ const connectRedis = async () => {
       console.error(" Redis Client Error:", err);
     });
 
-  
+
     await redis.ping();
 
     return redis;

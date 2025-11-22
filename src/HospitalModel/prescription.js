@@ -1,27 +1,45 @@
-import mongoose ,{Schema}from "mongoose";
+import mongoose, { Schema } from "mongoose";
 
-const prescriptionSchema=mongoose.Schema({
-    doctor:{
-        type:mongoose.Schema.Types.ObjectId,
-        ref:"User"
+const prescriptionSchema = new Schema(
+    {
+        doctor: {
+            type: mongoose.Schema.Types.ObjectId,
+            ref: "Doctor", // Changed from User to Doctor for clarity if applicable, or keep User if Doctor is a role
+            required: true,
+        },
+        patient: {
+            type: mongoose.Schema.Types.ObjectId,
+            ref: "User",
+            required: true,
+        },
+        appointment: {
+            type: mongoose.Schema.Types.ObjectId,
+            ref: "Appointment",
+        },
+        items: [
+            {
+                product: { type: mongoose.Schema.Types.ObjectId, ref: "Product" }, // Optional if linking to inventory
+                medicineName: { type: String, required: true },
+                dosage: { type: String, required: true },
+                frequency: { type: String, required: true }, // e.g., "1-0-1"
+                duration: { type: String, required: true }, // e.g., "5 days"
+                quantity: { type: Number, required: true }, // Total qty to dispense
+            },
+        ],
+        status: {
+            type: String,
+            enum: ["PENDING", "RECEIVED", "DISPENSED", "CANCELLED"],
+            default: "PENDING",
+        },
+        priority: {
+            type: String,
+            enum: ["ROUTINE", "URGENT", "EMERGENCY"],
+            default: "ROUTINE",
+        },
+        notes: String,
     },
-    patient:{
-        type:mongoose.Schema.Types.ObjectId,
-        ref:"User"
-    },
-    time:{
-        type:Date,
-        default:Date.now
-    },
-    medicines:{
-        type:String,
-        dosage:String,
-        frequency:Number,
-        duration:String
+    { timestamps: true }
+);
 
-    },
-    notes:String
-},{timestamp:true});
-
-export const prescription=mongoose.model("Prescription", prescriptionSchema);
+export const Prescription = mongoose.model("Prescription", prescriptionSchema);
 

@@ -11,72 +11,55 @@ const doctorSchema = new mongoose.Schema(
     gender: String,
     dob: Date,
     address: String,
+    department: { type: String, required: true },
+    experience: { type: Number, default: 0 },
 
-    department: { type: String, required: true }, // e.g., Cardiology, Neurology
-     // e.g., MBBS, MD
-    experience: { type: Number, default: 0 }, // Years of experience
+    // Available slots with full Date objects
     availableSlots: [
-    {
-      day: { type: String, required: true },
-      start: { type: String, required: true },
-      end: { type: String, required: true }
-    }
-  ],// e.g., ["09:00", "10:00", "14:00"]
-    image: String, // Profile picture
+      {
+        startTime: { type: Date, required: true },
+        endTime: { type: Date, required: true }
+      }
+    ],
 
-    isApproved: { type: Boolean, default: false }, // Admin approval
-    isVerified: { type: Boolean, default: false }, // Email verification
-
+    image: String,
+    isApproved: { type: Boolean, default: false },
+    isVerified: { type: Boolean, default: false },
     emailOTP: String,
     emailOTPExpiry: Date,
     resendOTPCounter: { type: Number, default: 0 },
     resendOTPWindowStart: Date,
     lastResendAt: Date,
+    lastBookingAttempt: Date,
   },
   { timestamps: true }
 );
 
-// Hash password before saving
+// Hash password
 doctorSchema.pre("save", async function (next) {
   if (!this.isModified("password")) return next();
   this.password = await bcrypt.hash(this.password, 12);
   next();
 });
 
-// Compare entered password with hashed password
+// Compare password
 doctorSchema.methods.isPasswordCorrect = async function (password) {
   return await bcrypt.compare(password, this.password);
 };
 
-// Generate Access Token
+// Generate tokens
 doctorSchema.methods.generateAccessToken = function () {
   return jwt.sign(
-    {
-      _id: this._id,
-      email: this.email,
-      name: this.name,
-      role: "doctor",
-      department: this.department,
-    },
+    { _id: this._id, email: this.email, name: this.name, role: "doctor", department: this.department },
     process.env.ACCESS_TOKEN_SECRET,
-    {
-      expiresIn: process.env.ACCESS_TOKEN_EXPIRY,
-    }
+    { expiresIn: process.env.ACCESS_TOKEN_EXPIRY }
   );
 };
 
-// Generate Refresh Token
 doctorSchema.methods.generateRefreshToken = function () {
-  return jwt.sign(
-    {
-      _id: this._id,
-      role: "doctor",
-    },
-    process.env.REFRESH_TOKEN_SECRET,
-    {
-      expiresIn: process.env.REFRESH_TOKEN_EXPIRY,
-    }
-  );
+  return jwt.sign({ _id: this._id, role: "doctor" }, process.env.REFRESH_TOKEN_SECRET, {
+    expiresIn: process.env.REFRESH_TOKEN_EXPIRY,
+  });
 };
 
 export const Doctor = mongoose.model("Doctor", doctorSchema);

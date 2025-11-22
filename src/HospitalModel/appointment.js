@@ -1,30 +1,45 @@
-import mongoose ,{Schema}from "mongoose";
+import mongoose, { Schema } from "mongoose";
 
-const appointmentSchema=mongoose.Schema({
+const appointmentSchema = new Schema(
+  {
+    user: { type: Schema.Types.ObjectId, ref: "User", required: true },
+    doctor: { type: Schema.Types.ObjectId, ref: "Doctor", required: true },
 
-    user:{
-        type:mongoose.Schema.Types.ObjectId,
-        ref:"User",
-        required:true
+    // Store start and end times of the appointment
+    startTime: { type: Date, required: true },
+    endTime: { 
+      type: Date, 
+      required: true,
+      validate: {
+        validator: function(value) {
+          // Ensure duration is 30 minutes
+          return (value - this.startTime) === 30 * 60 * 1000;
+        },
+        message: "Appointment must be exactly 30 minutes long"
+      }
     },
-    doctor:{
-        type:mongoose.Schema.Types.ObjectId, 
-        ref:"User",
-        required:true
+
+    mode: { type: String, enum: ["online", "offline"], required: true },
+    symptoms: { type: String },
+    prescription: { type: Schema.Types.ObjectId, ref: "Prescription" },
+    status: { type: String, enum: ["pending", "scheduled", "completed", "cancelled"], default: "pending" },
+
+    paymentStatus: { type: String, enum: ["pending", "paid"], default: "pending" },
+    paymentDetails: {
+      orderId: String,
+      paymentId: String,
+      signature: String,
     },
-    time:{type:Date,required:true},
-    symptoms:String,
-    prescription:{
-        type:mongoose.Schema.Types.ObjectId,
-        ref:"Prescription"
-    },
-    status:{
-        type:String,
-        required:true,
-        enum:["pending","completed","canceled"]
-    }
+  },
+  { timestamps: true }
+);
 
-},{timestamp:true});
+// Optional: auto-set endTime if only startTime is provided
+// appointmentSchema.pre("validate", function(next) {
+//   if (this.startTime && !this.endTime) {
+//     this.endTime = new Date(this.startTime.getTime() + 30 * 60 * 1000);
+//   }
+//   next();
+// });
 
-
-export const appointment=mongoose.model("Appointment",appointmentSchema);
+export const Appointment = mongoose.model("Appointment", appointmentSchema);

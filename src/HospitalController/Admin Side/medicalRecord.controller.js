@@ -2,7 +2,9 @@ import { MedicalRecord } from "../../HospitalModel/MedicalRecord.js";
 import { asynchandler } from "../../HospitalUtils/asynchandler.js";
 import { sendEmail } from "../../HospitalUtils/emailUtils/sendEmail.js";
 import { PDFGenerator } from "../../HospitalUtils/fileuploadingUtils/generatePrescriptionPDF.js";
-import { agenda } from "../../jobs/agenda.js";
+import { letterQueue } from "../../jobs/letter.queue.js";
+
+// import { agenda } from "../../jobs/agenda.js";
 
  const createMedicalRecord = asynchandler(async (req, res) => {
   const {
@@ -33,13 +35,15 @@ import { agenda } from "../../jobs/agenda.js";
   await newRecord.save();
 
   
-  await agenda.now('generate-and-send-prescription', {
+ await letterQueue.add("generate-and-send-prescription", {
     recordId: newRecord._id,
     patientName,
     doctorName,
     diagnosis,
     notes,
-    prescriptionDetails: prescriptionDetails ? JSON.parse(prescriptionDetails) : {},
+    prescriptionDetails: prescriptionDetails
+      ? JSON.parse(prescriptionDetails)
+      : {},
     email,
   });
 
