@@ -13,7 +13,7 @@ const connectRedis = async () => {
       password: "8y2OTJ7mfY1QoLyfpstcPQ3Lwk9u5BZY",
       maxRetriesPerRequest: null,
       enableReadyCheck: true,
-      tls: {} // IMPORTANT for Redis Cloud
+       // IMPORTANT for Redis Cloud
     });
 
     redis.on("connect", () => {
